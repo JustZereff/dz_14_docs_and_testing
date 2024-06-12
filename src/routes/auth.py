@@ -94,17 +94,12 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(), 
 @router.get('/confirmed_email/{token}')
 async def confirmed_email(token: str, db: AsyncSession = Depends(get_db)):
     """
-    The confirmed_email function is used to confirm a user's email address.
-        It takes the token from the URL and uses it to get the user's email address.
-        Then, it checks if that user exists in our database, and if they do exist, 
-        then we check whether or not their verification status is True (meaning they have already confirmed their email).
-         If so, we return a message saying that their email has already been confirmed. Otherwise, 
-         we call our repository_users function called verification_email which sets the value of &quot;verification&quot; for this particular user to True.
-    
-    :param token: str: Get the token from the url
-    :param db: AsyncSession: Pass the database session to the function
-    :return: A dictionary with the message key and a string value
-    :doc-author: Trelent
+    Confirms the user's email.
+
+    This function confirms the user's email using the token provided in the request.
+
+    Returns:
+        dict: A dictionary with the confirmed email.
     """
     logger.info("Confirming email")
     email = await auth_service.get_email_from_token(token)

@@ -18,18 +18,15 @@ router = APIRouter(prefix='/user', tags=['users'])
 @router.get("/me/", response_model=UserDb, dependencies=[Depends(RateLimiter(times=1, seconds=20))])
 async def read_users_me(current_user: User = Depends(auth_service.get_current_user)):
     """
-    The read_users_me function returns the current user's information.
-        ---
-        get:
-          tags: [users] # This is a tag that can be used to group operations by resources or any other qualifier.
-          summary: Returns the current user's information.
-          description: Returns the current user's information based on their JWT token in their request header.
-          responses: # The possible responses this operation can return, along with descriptions and examples of each response type (if applicable).
-            &quot;200&quot;:  # HTTP status code 200 indicates success! In this case, it means we successfully returned a User
-    
-    :param current_user: User: Get the current user
-    :return: The current user object
-    :doc-author: Trelent
+    Returns the current user's information.
+
+    This function retrieves information about the current user based on their JWT token.
+
+    Args:
+        current_user (User): The current user obtained from the JWT token.
+
+    Returns:
+        UserDb: An object containing the current user's information.
     """
     return current_user
 
@@ -39,18 +36,17 @@ async def update_avatar_user(file: UploadFile = File(),
                              db: AsyncSession = Depends(get_db)
                              ):
     """
-    The update_avatar_user function updates the avatar of a user.
-        Args:
-            file (UploadFile): The image to be uploaded.
-            current_user (User): The user whose avatar is being updated. 
-                                 This is obtained from the auth_service module's get_current_user function, which returns 
-                                 an object containing information about the currently logged in user, including their email address and username.
-    
-    :param file: UploadFile: Get the file from the request body
-    :param current_user: User: Get the current user from the database
-    :param db: AsyncSession: Get the database session
-    :return: A user object
-    :doc-author: Trelent
+    Updates the user's avatar.
+
+    This function updates the user's avatar based on the provided image file.
+
+    Args:
+        file (UploadFile): The image file to be uploaded.
+        current_user (User): The user whose avatar is being updated.
+        db (AsyncSession): The database session to perform the operations.
+
+    Returns:
+        UserDb: An object containing the updated user's information.
     """
     cloudinary.config(
         cloud_name=config.CLD_NAME,
