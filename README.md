@@ -1,6 +1,7 @@
-ДЗ 13, частина 1 - REST_API
-
-Для початку треба створити файл .env по прикладу ".env.example"
-Встановити залежності "requirements.txt"
-Запустити Докер
-Виконати команду uvicorn main:app --reload
+ДЗ 14
+Тести лежать у репозиторії tests
+Щоб використати тести, потрібно виконати данні команди:
+cd tests
+pytest -v pytest_repository_contacts.py
+python test_repository_contacts.py
+python test_repository_users.py

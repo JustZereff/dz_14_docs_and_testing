@@ -1,9 +1,13 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.sql import func
 from src.schemas.contact import ContactInput
 from src.entity.models import Contact
 from datetime import date, datetime, timedelta
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 async def get_contacts(limit: int, offset: int, db: AsyncSession):
     """
@@ -76,6 +80,7 @@ async def get_contact_by_email(email: str, db: AsyncSession):
     contact = await db.execute(stmt)
     return contact.scalar_one_or_none()
 
+
 async def create_contact(body: ContactInput, user_id: int, db: AsyncSession):
     """
     The create_contact function creates a new contact in the database.
@@ -91,34 +96,43 @@ async def create_contact(body: ContactInput, user_id: int, db: AsyncSession):
     # Преобразование даты в строку, если поле birthday существует
     if 'birthday' in contact_data and isinstance(contact_data['birthday'], date):
         contact_data['birthday'] = contact_data['birthday'].strftime('%Y-%m-%d')
-    
+        
     contact = Contact(**contact_data, user_id=user_id)
     db.add(contact)
     await db.commit()
     await db.refresh(contact)
     return contact
 
+
+
 async def update_contact(contact_id: int, body: ContactInput, user_id: int, db: AsyncSession):
     """
     The update_contact function updates a contact in the database.
-    
+
     :param contact_id: int: Identify the contact to be updated
     :param body: ContactInput: Get the data from the request body
     :param user_id: int: Ensure that the user is only able to update their own contacts
     :param db: AsyncSession: Pass the database session to the function
-    :return: The updated contact
+    :return: The updated contact or None if not found
     :doc-author: Trelent
     """
+    contact_data = body.model_dump(exclude_unset=True)
+
+    # Преобразование даты в строку, если поле birthday существует
+    if 'birthday' in contact_data and isinstance(contact_data['birthday'], date):
+        contact_data['birthday'] = contact_data['birthday'].strftime('%Y-%m-%d')
+
     stmt = select(Contact).filter_by(id=contact_id, user_id=user_id)
     result = await db.execute(stmt)
     contact = result.scalar_one_or_none()
     if not contact:
         return None
-    for key, value in body.dict().items():
+    for key, value in contact_data.items():
         setattr(contact, key, value)
     await db.commit()
     await db.refresh(contact)
     return contact
+
 
 async def delete_contact(contact_id: int, user_id: int, db: AsyncSession):
     """

@@ -7,6 +7,12 @@ from src.entity.models import User
 from src.services.auth import auth_service
 from fastapi_limiter.depends import RateLimiter
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 router = APIRouter(prefix='/contacts', tags=['contact'])
 
 @router.get(path='/', response_model=list[ContactOutput], dependencies=[Depends(RateLimiter(times=5, seconds=60))])
@@ -102,8 +108,14 @@ async def create_contact(body: ContactInput, db: AsyncSession = Depends(get_db),
     :return: A contact object
     :doc-author: Trelent
     """
-    contact = await repositories_contact.create_contact(body, current_user.id, db)
-    return contact
+    try:
+        contact = await repositories_contact.create_contact(body, current_user.id, db)
+        logger.info("Creating contact")
+        return contact
+    except:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not authorized!')
+    finally:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not authorized!')
 
 @router.put('/id/{contact_id}', response_model=ContactOutput)
 async def update_contact(contact_id: int, body: ContactInput, db: AsyncSession = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)):
